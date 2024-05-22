@@ -44,6 +44,7 @@ if data_name == 'sz':
     data, adj = load_sz_data('sz')
     # Drop the first 11 days
     data = data.drop(data.index[:1056])
+    print(data.shape)
     if adj_matrix == 'gsl':
         # Load the matrix from the file
         W_est = np.load('est_adj/W_est_sz_20day.npy')
@@ -190,8 +191,8 @@ index = test_rmse.index(np.min(test_rmse))
 test_result = test_pred[index]
 var = pd.DataFrame(test_result)
 var.to_csv(path+'/test_result.csv',index = False,header = False)
-#plot_result(test_result,test_label1,path)
-#plot_error(train_rmse,train_loss,test_rmse,test_acc,test_mae,path)
+plot_result(test_result,test_label1,path)
+plot_error(train_rmse,train_loss,test_rmse,test_acc,test_mae,path)
 
 print('min_rmse:%r'%(np.min(test_rmse)),
       'min_mae:%r'%(test_mae[index]),
