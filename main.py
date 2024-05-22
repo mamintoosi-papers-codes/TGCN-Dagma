@@ -23,11 +23,12 @@ flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
 flags.DEFINE_integer('training_epoch', 100, 'Number of epochs to train.')
 flags.DEFINE_integer('gru_units', 64, 'hidden units of gru.')
 flags.DEFINE_integer('seq_len',12 , '  time length of inputs.')
-flags.DEFINE_integer('pre_len', 3, 'time length of prediction.')
+flags.DEFINE_integer('pre_len', 1, 'time length of prediction.')
 flags.DEFINE_float('train_rate', 0.8, 'rate of training set.')
 flags.DEFINE_integer('batch_size', 32, 'batch size.')
 flags.DEFINE_string('dataset', 'sz', 'sz or los.')
 flags.DEFINE_string('model_name', 'tgcn', 'tgcn')
+flags.DEFINE_string('adjacency_matrix', 'dist', 'Specifies whether to estimate adjacency matrix (gsl) or load from distance file.')
 model_name = FLAGS.model_name
 data_name = FLAGS.dataset
 train_rate =  FLAGS.train_rate
@@ -37,10 +38,20 @@ batch_size = FLAGS.batch_size
 lr = FLAGS.learning_rate
 training_epoch = FLAGS.training_epoch
 gru_units = FLAGS.gru_units
-
+adj_matrix = FLAGS.adjacency_matrix
 ###### load data ######
 if data_name == 'sz':
     data, adj = load_sz_data('sz')
+    # Drop the first 11 days
+    data = data.drop(data.index[:1056])
+    if adj_matrix == 'gsl':
+        # Load the matrix from the file
+        W_est = np.load('est_adj/W_est_sz_20day.npy')
+        adj = np.zeros(W_est.shape, dtype=int)
+        # Update values in adj based on the condition
+        adj[W_est > 0] = 1
+        # print('W_est is loaded')
+
 if data_name == 'los':
     data, adj = load_los_data('los')
 
@@ -110,7 +121,7 @@ sess.run(tf.global_variables_initializer())
 
 out = 'out/%s'%(model_name)
 #out = 'out/%s_%s'%(model_name,'perturbation')
-path1 = '%s_%s_lr%r_batch%r_unit%r_seq%r_pre%r_epoch%r'%(model_name,data_name,lr,batch_size,gru_units,seq_len,pre_len,training_epoch)
+path1 = '%s_%s_lr%r_batch%r_unit%r_seq%r_pre%r_epoch%r_adj-%s'%(model_name,data_name,lr,batch_size,gru_units,seq_len,pre_len,training_epoch,adj_matrix)
 path = os.path.join(out,path1)
 if not os.path.exists(path):
     os.makedirs(path)
@@ -127,7 +138,9 @@ def evaluation(a,b):
    
 x_axe,batch_loss,batch_rmse,batch_pred = [], [], [], []
 test_loss,test_rmse,test_mae,test_acc,test_r2,test_var,test_pred = [],[],[],[],[],[],[]
-  
+# Create an empty DataFrame to store the results
+df = pd.DataFrame(columns=['Iter', 'train_rmse', 'test_loss', 'test_rmse', 'test_acc'])
+
 for epoch in range(training_epoch):
     for m in range(totalbatch):
         mini_batch = trainX[m * batch_size : (m+1) * batch_size]
@@ -152,6 +165,8 @@ for epoch in range(training_epoch):
     test_var.append(var_score)
     test_pred.append(test_output1)
     
+    # df = df.append({'Iter': epoch, 'train_rmse': round(train_rmse, 4), 'test_loss': round(loss2, 4), 'test_rmse': round(rmse, 4), 'test_acc': round(acc, 4)}, ignore_index=True)
+
     print('Iter:{}'.format(epoch),
           'train_rmse:{:.4}'.format(batch_rmse[-1]),
           'test_loss:{:.4}'.format(loss2),
