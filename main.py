@@ -20,7 +20,7 @@ time_start = time.time()
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
-flags.DEFINE_integer('training_epoch', 100, 'Number of epochs to train.')
+flags.DEFINE_integer('training_epoch', 50, 'Number of epochs to train.')
 flags.DEFINE_integer('gru_units', 64, 'hidden units of gru.')
 flags.DEFINE_integer('seq_len',12 , '  time length of inputs.')
 flags.DEFINE_integer('pre_len', 1, 'time length of prediction.')
@@ -174,7 +174,7 @@ for epoch in range(training_epoch):
           'test_rmse:{:.4}'.format(rmse),
           'test_acc:{:.4}'.format(acc))
     
-    if (epoch % 500 == 0):        
+    if (epoch % 50 == 0):        
         saver.save(sess, path+'/model_100/TGCN_pre_%r'%epoch, global_step = epoch)
         
 time_end = time.time()
@@ -189,8 +189,21 @@ train_loss = [(sum(batch_loss1[i*totalbatch:(i+1)*totalbatch])/totalbatch) for i
 
 index = test_rmse.index(np.min(test_rmse))
 test_result = test_pred[index]
-var = pd.DataFrame(test_result)
-var.to_csv(path+'/test_result.csv',index = False,header = False)
+# var = pd.DataFrame(test_result)
+# var.to_csv(path+'/test_result.csv',index = False,header = False)
+
+# Create dataframes for test_result and test_label1
+df_test_result = pd.DataFrame(test_result)
+df_test_label1 = pd.DataFrame(test_label1)
+
+# Specify the path for the csv file
+file_name = path+'/test_result.xlsx'
+
+# Write to the csv file with two sheets
+with pd.ExcelWriter(file_name) as writer:
+    df_test_result.to_excel(writer, sheet_name='pred', index=False, header=False)
+    df_test_label1.to_excel(writer, sheet_name='true', index=False, header=False)
+
 plot_result(test_result,test_label1,path)
 plot_error(train_rmse,train_loss,test_rmse,test_acc,test_mae,path)
 
