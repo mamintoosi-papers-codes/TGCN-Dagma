@@ -28,7 +28,7 @@ flags.DEFINE_float('train_rate', 0.8, 'rate of training set.')
 flags.DEFINE_integer('batch_size', 32, 'batch size.')
 flags.DEFINE_string('dataset', 'sz', 'sz or los.')
 flags.DEFINE_string('model_name', 'tgcn', 'tgcn')
-flags.DEFINE_string('adjacency_matrix', 'dist', 'Specifies whether to estimate adjacency matrix (gsl) or load from distance file.')
+flags.DEFINE_string('adjacency_matrix', 'dist', 'Specifies whether to estimate adjacency matrix (gsl) or load from distance file.') #gsl, gsldist
 model_name = FLAGS.model_name
 data_name = FLAGS.dataset
 train_rate =  FLAGS.train_rate
@@ -45,16 +45,21 @@ if data_name == 'sz':
     # Drop the first 11 days
     data = data.drop(data.index[:1056])
     print(data.shape)
-    if adj_matrix == 'gsl':
-        # Load the matrix from the file
-        W_est = np.load('est_adj/W_est_sz_20day.npy')
-        adj = np.zeros(W_est.shape, dtype=int)
-        # Update values in adj based on the condition
-        adj[W_est > 0] = 1
-        # print('W_est is loaded')
-
 if data_name == 'los':
     data, adj = load_los_data('los')
+
+W_est_file_name = f"est_adj/W_est_{data_name}.npy"
+if 'gsl' in adj_matrix:
+    # Load the matrix from the file
+    W_est = np.load(W_est_file_name)
+
+    # If gsl method is used, the previous adj is reset to zero
+    # else the computed ad learned by gsl is added to adj
+    if adj_matrix == 'gsl':
+        adj = np.zeros(W_est.shape, dtype=int)
+    # Update values in adj based on the condition
+    adj[W_est > 0] = 1
+    # print('W_est is loaded')
 
 time_len = data.shape[0]
 num_nodes = data.shape[1]
