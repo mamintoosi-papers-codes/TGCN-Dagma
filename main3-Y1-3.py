@@ -87,27 +87,20 @@ def TGCN(_X, _weights, _biases):
         m.append(o)
     last_output = m[-1]
     output = tf.matmul(last_output, _weights['out']) + _biases['out']
-    # output = tf.reshape(output,shape=[-1,num_nodes,pre_len])
-    output = tf.reshape(output,shape=[-1,num_nodes, 1])
+    output = tf.reshape(output,shape=[-1,num_nodes,pre_len])
     output = tf.transpose(output, perm=[0,2,1])
     output = tf.reshape(output, shape=[-1,num_nodes])
     return output, m, states
         
 ###### placeholders ######
 inputs = tf.placeholder(tf.float32, shape=[None, seq_len, num_nodes])
-# labels = tf.placeholder(tf.float32, shape=[None, pre_len, num_nodes]) M. Amintoosi
-labels = tf.placeholder(tf.float32, shape=[None, 1, num_nodes])
+labels = tf.placeholder(tf.float32, shape=[None, pre_len, num_nodes])
 
 # Graph weights
-# weights = {
-#     'out': tf.Variable(tf.random_normal([gru_units, pre_len], mean=1.0), name='weight_o')}
-# biases = {
-#     'out': tf.Variable(tf.random_normal([pre_len]),name='bias_o')}
 weights = {
-    'out': tf.Variable(tf.random_normal([gru_units, 1], mean=1.0), name='weight_o')}
+    'out': tf.Variable(tf.random_normal([gru_units, pre_len], mean=1.0), name='weight_o')}
 biases = {
-    'out': tf.Variable(tf.random_normal([1]),name='bias_o')}
-
+    'out': tf.Variable(tf.random_normal([pre_len]),name='bias_o')}
 
 if model_name == 'tgcn':
     pred,ttts,ttto = TGCN(inputs, weights, biases)
