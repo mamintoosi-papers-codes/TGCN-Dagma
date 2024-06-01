@@ -52,7 +52,10 @@ W_est_file_name = f"est_adj/W_est_{data_name}_pre_len{pre_len}.npy"
 if 'gsl' in adj_matrix: # gsl or gsldist
     # Load the matrix from the file
     W_est_all = np.load(W_est_file_name)
-    W_est = np.any(W_est_all>0, axis=2)
+    if W_est_all.ndim == 2:
+        W_est = W_est_all>0
+    elif W_est_all.ndim == 3:    
+        W_est = np.any(W_est_all>0, axis=2)
     # If gsl method is used, the previous adj is reset to zero
     # else the computed ad learned by gsl is added to adj
     if adj_matrix == 'gsl':
