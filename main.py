@@ -20,7 +20,7 @@ time_start = time.time()
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
-flags.DEFINE_integer('training_epoch', 50, 'Number of epochs to train.')
+flags.DEFINE_integer('training_epoch', 100, 'Number of epochs to train.')
 flags.DEFINE_integer('gru_units', 64, 'hidden units of gru.')
 flags.DEFINE_integer('seq_len',12 , '  time length of inputs.')
 flags.DEFINE_integer('pre_len', 1, 'time length of prediction.')
@@ -175,7 +175,7 @@ for epoch in range(training_epoch):
     test_label1 = test_label * max_value
     test_output1 = test_output * max_value
     test_loss.append(loss2)
-    test_rmse.append(rmse * max_value)
+    test_rmse.append(rmse2 * max_value) # M. Amintoosi, rmse->rmse2
     test_mae.append(mae * max_value)
     test_acc.append(acc)
     test_r2.append(r2_score)
@@ -187,7 +187,7 @@ for epoch in range(training_epoch):
     print('Iter:{}'.format(epoch),
           'train_rmse:{:.4}'.format(batch_rmse[-1]),
           'test_loss:{:.4}'.format(loss2),
-          'test_rmse:{:.4}'.format(rmse),
+          'test_rmse:{:.4}'.format(rmse2 * max_value), # M. Amintoosi, rmse->rmse2 * max_value
           'test_acc:{:.4}'.format(acc))
     
     if (epoch % 50 == 0):        
