@@ -14,31 +14,39 @@ from visualization import plot_result,plot_error
 from sklearn.metrics import mean_squared_error,mean_absolute_error
 #import matplotlib.pyplot as plt
 import time
+import argparse
 
 time_start = time.time()
-###### Settings ######
-flags = tf.app.flags
-FLAGS = flags.FLAGS
-flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
-flags.DEFINE_integer('training_epoch', 100, 'Number of epochs to train.')
-flags.DEFINE_integer('gru_units', 64, 'hidden units of gru.')
-flags.DEFINE_integer('seq_len',12 , '  time length of inputs.')
-flags.DEFINE_integer('pre_len', 1, 'time length of prediction.')
-flags.DEFINE_float('train_rate', 0.8, 'rate of training set.')
-flags.DEFINE_integer('batch_size', 32, 'batch size.')
-flags.DEFINE_string('dataset', 'sz', 'sz or los.')
-flags.DEFINE_string('model_name', 'tgcn', 'tgcn')
-flags.DEFINE_string('adjacency_matrix', 'dist', 'Specifies whether to estimate adjacency matrix (gsl) or load from distance file.') #gsl, gsldist
-model_name = FLAGS.model_name
-data_name = FLAGS.dataset
-train_rate =  FLAGS.train_rate
-seq_len = FLAGS.seq_len
-output_dim = pre_len = FLAGS.pre_len
-batch_size = FLAGS.batch_size
-lr = FLAGS.learning_rate
-training_epoch = FLAGS.training_epoch
-gru_units = FLAGS.gru_units
-adj_matrix = FLAGS.adjacency_matrix
+# Reset the default graph
+tf.reset_default_graph()
+
+# Define command-line arguments using argparse
+
+parser = argparse.ArgumentParser(description='Your description here')
+parser.add_argument('--learning_rate', type=float, default=0.001, help='Initial learning rate.')
+parser.add_argument('--training_epoch', type=int, default=100, help='Number of epochs to train.')
+parser.add_argument('--gru_units', type=int, default=64, help='Hidden units of GRU.')
+parser.add_argument('--seq_len', type=int, default=12, help='Time length of inputs.')
+parser.add_argument('--pre_len', type=int, default=1, help='Time length of prediction.')
+parser.add_argument('--train_rate', type=float, default=0.8, help='Rate of training set.')
+parser.add_argument('--batch_size', type=int, default=32, help='Batch size.')
+parser.add_argument('--dataset', type=str, default='sz', help='sz or los.')
+parser.add_argument('--model_name', type=str, default='tgcn', help='Model name')
+parser.add_argument('--adjacency_matrix', type=str, default='dist', help='Specifies whether to estimate adjacency matrix (gsl, dist, gsldist).')  # gsl, gsldist
+
+args = parser.parse_args()
+
+model_name = args.model_name
+data_name = args.dataset
+train_rate =  args.train_rate
+seq_len = args.seq_len
+output_dim = pre_len = args.pre_len
+batch_size = args.batch_size
+lr = args.learning_rate
+training_epoch = args.training_epoch
+gru_units = args.gru_units
+adj_matrix = args.adjacency_matrix
+
 ###### load data ######
 if data_name == 'sz':
     data, adj = load_sz_data('sz')
