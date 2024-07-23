@@ -71,6 +71,10 @@ if 'gsl' in adj_matrix: # gsl or gsldist
 
     # Update values in adj based on the condition
     adj[W_est > 0] = 1
+
+    # converting graph to undirected
+    # adj = adj + adj.T
+
     # print('W_est is loaded')
 
 time_len = data.shape[0]
